@@ -32,4 +32,6 @@ public class customerController {
         customerService.addCustomer(signUp);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+
 }

@@ -21,10 +21,14 @@ public class TransactionController {
     }
 
     @PostMapping("/withdraw")
-    public void withdraw(){}
-
+    public ResponseEntity<String> withdraw(@RequestParam String accountNumber, @RequestParam BigDecimal amount){
+        return ResponseEntity.ok(transactionService.withdraw(accountNumber, amount));
+    }
     @PostMapping("/transfer")
-    public void transfer(){}
+    public ResponseEntity<String> transfer(@RequestParam String accountNumber, @RequestParam BigDecimal amount, @RequestParam String receiverNumber){
+
+        return ResponseEntity.ok(transactionService.transfer(accountNumber,amount,receiverNumber));
+    }
 
     @GetMapping("/history")
     public void history(){}

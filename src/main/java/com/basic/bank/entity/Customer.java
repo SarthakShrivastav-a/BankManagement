@@ -12,7 +12,7 @@ import java.util.List;
 public class Customer {
 
     @Id
-    private String accountNumber;
+    private final String accountNumber;
     private String name;
     private String email;
     private String phoneNumber;
@@ -33,12 +33,12 @@ public class Customer {
         return accountNumber;
     }
 
-    public void setAccountNumber(String accountNumber) {
-        if (accountNumber == null) {
-            throw new IllegalArgumentException("Account number cannot be null");
-        }
-        this.accountNumber = accountNumber;
-    }
+//    public void setAccountNumber(String accountNumber) {
+//        if (accountNumber == null) {
+//            throw new IllegalArgumentException("Account number cannot be null");
+//        }
+//        this.accountNumber = accountNumber;
+//    }
 
     public String getName() {
         return name;
