@@ -1,6 +1,7 @@
 package com.basic.bank.controller;
 
 
+import com.basic.bank.entity.Transaction;
 import com.basic.bank.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,9 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.transfer(accountNumber,amount,receiverNumber));
     }
 
-
+    @GetMapping
+    public ResponseEntity<Transaction> getTransactionById(@RequestParam String id){
+        return new ResponseEntity<>(transactionService.getTransactionById(id),HttpStatus.ACCEPTED);
+    }
 
 }

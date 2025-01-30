@@ -1,18 +1,14 @@
 package com.basic.bank.service;
 
 import com.basic.bank.entity.Account;
-import com.basic.bank.entity.Customer;
 import com.basic.bank.entity.Transaction;
 import com.basic.bank.repository.AccountRepository;
-import com.basic.bank.repository.CustomerRepository;
 import com.basic.bank.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -99,6 +95,14 @@ public class TransactionService {
             return "Account Low On Balance";
         }
         return "Receiver or Sender account Not Found!";
+    }
+
+    public Transaction getTransactionById(String id){
+        Optional<Transaction> transaction =  transactionRepository.findById(id);
+        if (transaction.isPresent()){
+            return transaction.get();
+        }
+        return null;
     }
 
 }
