@@ -101,11 +101,4 @@ public class TransactionService {
         return "Receiver or Sender account Not Found!";
     }
 
-    public List<Transaction> getHistory(String accountNumber){
-        Optional<Account> customer = accountRepository.findById(accountNumber);
-        if(customer.isPresent()){
-            return customer.get().getTransactions();
-        }
-        return null;
-    }
 }

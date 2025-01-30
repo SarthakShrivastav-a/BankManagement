@@ -1,9 +1,6 @@
 package com.basic.bank.service;
 
-import com.basic.bank.entity.Account;
-import com.basic.bank.entity.AuthUser;
-import com.basic.bank.entity.Customer;
-import com.basic.bank.entity.SignUp;
+import com.basic.bank.entity.*;
 import com.basic.bank.repository.AccountRepository;
 import com.basic.bank.repository.AuthUserRepository;
 import com.basic.bank.repository.CustomerRepository;
@@ -49,6 +46,40 @@ public class CustomerService {
     public Optional<Customer> getCustomer(String accountNum){
         return customerRepository.findById(accountNum);
     }
+
+    public List<Transaction> getHistory(String accountNumber){
+        Optional<Account> customer = accountRepository.findById(accountNumber);
+        if(customer.isPresent()){
+            return customer.get().getTransactions();
+        }
+        return null;
+    }
+    public Customer updateUser(String account,Customer customer){
+        Optional<Customer> customerOpt = customerRepository.findById(account);
+        if (customerOpt.isPresent()){
+            Customer updatedCustomer = customerOpt.get();
+            if (customer.getName() != null) {
+                updatedCustomer.setName(customer.getName());
+            }
+            if (customer.getEmail() != null) {
+                updatedCustomer.setEmail(customer.getEmail());
+            }
+            if (customer.getPhoneNumber() != null) {
+                updatedCustomer.setPhoneNumber(customer.getPhoneNumber());
+            }
+
+            customerRepository.save(updatedCustomer);
+            return updatedCustomer;
+        }
+        return null;
+    }
+
+
+
+
+
+
+//    public List<>
     public static String generateAccountNumber() {
         return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 12);
     }

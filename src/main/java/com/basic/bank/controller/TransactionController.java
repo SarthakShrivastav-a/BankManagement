@@ -32,8 +32,6 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.transfer(accountNumber,amount,receiverNumber));
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<?> history(@RequestParam String accountNumber){
-        return new ResponseEntity<>(transactionService.getHistory(accountNumber), HttpStatus.ACCEPTED);
-    }
+
+
 }

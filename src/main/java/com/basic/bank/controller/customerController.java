@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/customer")
+@RequestMapping("/api/account")
 public class customerController {
 
     @Autowired
@@ -27,10 +27,9 @@ public class customerController {
     private CustomerService customerService;
 
 
-    @PostMapping("/create")
-    public ResponseEntity<SignUp> createCustomer(@Valid @RequestBody SignUp signUp){
-        customerService.addCustomer(signUp);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    @GetMapping("/history")
+    public ResponseEntity<?> history(@RequestParam String account){
+        return new ResponseEntity<>(customerService.getHistory(account), HttpStatus.ACCEPTED);
     }
 
 
