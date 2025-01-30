@@ -8,7 +8,7 @@ import lombok.Data;
 
 
 //@Data
-@JsonIgnoreProperties(ignoreUnknown = false)  // This will cause an error if unknown fields are sent
+@JsonIgnoreProperties(ignoreUnknown = false)  // this will cause an error if unknown fields are sent
 public class SignUp {
 
     @NotBlank(message = "Name is required")

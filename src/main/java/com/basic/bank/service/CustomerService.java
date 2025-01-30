@@ -1,8 +1,10 @@
 package com.basic.bank.service;
 
+import com.basic.bank.entity.Account;
 import com.basic.bank.entity.AuthUser;
 import com.basic.bank.entity.Customer;
 import com.basic.bank.entity.SignUp;
+import com.basic.bank.repository.AccountRepository;
 import com.basic.bank.repository.AuthUserRepository;
 import com.basic.bank.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
 
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -33,8 +38,10 @@ public class CustomerService {
         String passWord = encoder.encode(signUp.getPassword());
         AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"CUSTOMER");
         Customer customer = new Customer(accNumber, signUp.getName(), signUp.getEmail(), signUp.getPhoneNumber());
+        Account account = new Account(accNumber);
         authUserRepository.save(authUser);
         customerRepository.save(customer);
+        accountRepository.save(account);
     }
     public List<Customer> getCustomers(){
         return customerRepository.findAll();
