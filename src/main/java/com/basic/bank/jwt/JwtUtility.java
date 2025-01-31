@@ -38,6 +38,7 @@ public class JwtUtility {
         String username = userDetails.getUsername();
         return Jwts.builder()
                 .subject(username)
+                .claim("roles",userDetails.getAuthorities())
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key())
