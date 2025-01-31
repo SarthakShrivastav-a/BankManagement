@@ -1,7 +1,7 @@
 package com.basic.bank.controller;
 
 
-import com.basic.bank.service.AuthUserService;
+import com.basic.bank.service.AuthService;
 import com.basic.bank.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
 
     @Autowired
-    private AuthUserService authUserService;
+    private AuthService authUserService;
 
     @Autowired
     private CustomerService customerService;
