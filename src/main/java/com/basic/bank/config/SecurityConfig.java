@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -40,13 +42,11 @@ public class SecurityConfig {
         logger.debug("Configuring HttpSecurity.");
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/customers/create").permitAll()
+//                        .requestMatchers("/api/customers/create").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/auth/signin")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("**/error/**")).permitAll()
-                        .requestMatchers("/api/account/**","/api/transactions/**").hasRole("CUSTOMER")
-
+//                        .requestMatchers("/api/account/**","/api/transactions/**").hasRole("CUSTOMER")
 //                        .requestMatchers("/api/customers/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

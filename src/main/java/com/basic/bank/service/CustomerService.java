@@ -33,7 +33,7 @@ public class CustomerService {
     public void addCustomer(SignUp signUp){
         String accNumber = generateAccountNumber();
         String passWord = encoder.encode(signUp.getPassword());
-        AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"ROLE_USER");
+        AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"USER");
         Customer customer = new Customer(accNumber, signUp.getName(), signUp.getEmail(), signUp.getPhoneNumber());
         Account account = new Account(accNumber);
         authUserRepository.save(authUser);
