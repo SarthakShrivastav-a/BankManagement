@@ -75,7 +75,15 @@ public class CustomerService {
         }
         return null;
     }
-
+    public String deleteCustomer(String account){
+        if (customerRepository.existsById(account)){
+            customerRepository.deleteById(account);
+            accountRepository.deleteById(account);
+            authUserRepository.deleteById(account);
+            return "User Deleted Successfully";
+        }
+        return "User Not Found";
+    }
 
 
 
