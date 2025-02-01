@@ -18,6 +18,11 @@ public class TransactionController {
     @Autowired
     TransactionService transactionService;
 
+    @GetMapping("/hi")
+    public String hi(){
+    return "hi";
+    }
+
     @PostMapping("/deposit")
     public ResponseEntity<String> deposit(@RequestParam String accountNumber, @RequestParam BigDecimal amount) {
         return ResponseEntity.ok(transactionService.deposit(accountNumber, amount));

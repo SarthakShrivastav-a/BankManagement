@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Document(collection = "AuthUser")
 @Data
@@ -59,5 +61,9 @@ public class AuthUser {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public GrantedAuthority getAuthority() {
+        return new SimpleGrantedAuthority(role); //for role
     }
 }

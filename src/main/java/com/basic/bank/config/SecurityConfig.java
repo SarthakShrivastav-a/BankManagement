@@ -42,7 +42,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/api/customers/create").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/auth/signin")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("**/error/**")).permitAll()
+                        .requestMatchers("/api/account/**","/api/transactions/**").hasRole("CUSTOMER")
+
+//                        .requestMatchers("/api/customers/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

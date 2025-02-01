@@ -30,10 +30,6 @@ public class customersController {
     public ResponseEntity<List<Customer>> getAllCustomers(){
         return new ResponseEntity<>(customerService.getCustomers(), HttpStatus.ACCEPTED);
     }
-    @GetMapping("/info")
-    public ResponseEntity<Optional<Customer>> getDetails(@RequestParam String account){
-        return new ResponseEntity<>(customerService.getCustomer(account),HttpStatus.OK);
-    }
     @PutMapping("/update")
     public ResponseEntity<Customer> updateUser(@RequestBody Customer customer, @RequestParam String account){
         return new ResponseEntity<>(customerService.updateUser(account,customer),HttpStatus.CREATED);
