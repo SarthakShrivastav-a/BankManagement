@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,17 +23,14 @@ public class customersController {
     private CustomerService customerService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SignUp> createCustomer(@Valid @RequestBody SignUp signUp){
         customerService.addCustomer(signUp);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-    @GetMapping
+    @GetMapping("all")
     public ResponseEntity<List<Customer>> getAllCustomers(){
         return new ResponseEntity<>(customerService.getCustomers(), HttpStatus.ACCEPTED);
-    }
-    @GetMapping("/info")
-    public ResponseEntity<Optional<Customer>> getDetails(@RequestParam String account){
-        return new ResponseEntity<>(customerService.getCustomer(account),HttpStatus.OK);
     }
     @PutMapping("/update")
     public ResponseEntity<Customer> updateUser(@RequestBody Customer customer, @RequestParam String account){
