@@ -4,11 +4,14 @@ import com.basic.bank.entity.*;
 import com.basic.bank.repository.AccountRepository;
 import com.basic.bank.repository.AuthUserRepository;
 import com.basic.bank.repository.CustomerRepository;
+import com.basic.bank.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,15 +28,18 @@ public class CustomerService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
+
 
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
-//    @Transactional
+    @Transactional
     public void addCustomer(SignUp signUp){
         String accNumber = generateAccountNumber();
         String passWord = encoder.encode(signUp.getPassword());
-        AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"USER");
+        AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"CUSTOMER");
         Customer customer = new Customer(accNumber, signUp.getName(), signUp.getEmail(), signUp.getPhoneNumber());
         Account account = new Account(accNumber);
         authUserRepository.save(authUser);
@@ -56,6 +62,7 @@ public class CustomerService {
         }
         return null;
     }
+    @Transactional
     public Customer updateUser(String account,Customer customer){
         Optional<Customer> customerOpt = customerRepository.findById(account);
         if (customerOpt.isPresent()){
@@ -74,6 +81,32 @@ public class CustomerService {
             return updatedCustomer;
         }
         return null;
+    }
+    @Transactional
+    public String deleteCustomer(String account){
+        if (customerRepository.existsById(account)){
+            customerRepository.deleteById(account);
+            accountRepository.deleteById(account);
+            authUserRepository.deleteById(account);
+            return "User Deleted Successfully";
+        }
+        return "User Not Found";
+    }
+
+    public BigDecimal getBalance(String accountNumber) {
+        Optional<Account> accountOptional = accountRepository.findById(accountNumber);
+        if (accountOptional.isPresent()) {
+            return accountOptional.get().getBalance();
+        }
+        return null;
+    }
+
+    public List<Transaction> getStatements(String accountNumber, LocalDate startDate, LocalDate endDate) {
+        return transactionRepository.findByAccountNumberAndTimestampBetween(
+                accountNumber,
+                startDate.atStartOfDay(),
+                endDate.atTime(23, 59, 59)
+        );
     }
 
 

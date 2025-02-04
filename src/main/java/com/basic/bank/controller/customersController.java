@@ -24,16 +24,41 @@ public class customersController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SignUp> createCustomer(@Valid @RequestBody SignUp signUp){
+    public ResponseEntity<SignUp> createCustomer(@Valid @RequestBody SignUp signUp) {
         customerService.addCustomer(signUp);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-    @GetMapping("all")
-    public ResponseEntity<List<Customer>> getAllCustomers(){
+
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Customer>> getAllCustomers() {
         return new ResponseEntity<>(customerService.getCustomers(), HttpStatus.ACCEPTED);
     }
+
     @PutMapping("/update")
-    public ResponseEntity<Customer> updateUser(@RequestBody Customer customer, @RequestParam String account){
-        return new ResponseEntity<>(customerService.updateUser(account,customer),HttpStatus.CREATED);
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+    public ResponseEntity<Customer> updateUser(@RequestBody Customer customer, @RequestParam String account) {
+        return new ResponseEntity<>(customerService.updateUser(account, customer), HttpStatus.CREATED);
     }
+
+    @DeleteMapping("/delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteCustomer(@RequestParam String account) {
+        String response = customerService.deleteCustomer(account);
+        return new  ResponseEntity<>(response,HttpStatus.ACCEPTED);
+    }
+//
+//    @PostMapping("/block")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<Void> blockAccount(@RequestParam String account) {
+//        customerService.blockAccount(account);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
+//
+//    @PostMapping("/unblock")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<Void> unblockAccount(@RequestParam String account) {
+//        customerService.unblockAccount(account);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 }
