@@ -29,11 +29,11 @@ public class CustomerService {
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
-//    @Transactional
+    @Transactional
     public void addCustomer(SignUp signUp){
         String accNumber = generateAccountNumber();
         String passWord = encoder.encode(signUp.getPassword());
-        AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"USER");
+        AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"CUSTOMER");
         Customer customer = new Customer(accNumber, signUp.getName(), signUp.getEmail(), signUp.getPhoneNumber());
         Account account = new Account(accNumber);
         authUserRepository.save(authUser);
@@ -56,6 +56,7 @@ public class CustomerService {
         }
         return null;
     }
+    @Transactional
     public Customer updateUser(String account,Customer customer){
         Optional<Customer> customerOpt = customerRepository.findById(account);
         if (customerOpt.isPresent()){
@@ -75,6 +76,7 @@ public class CustomerService {
         }
         return null;
     }
+    @Transactional
     public String deleteCustomer(String account){
         if (customerRepository.existsById(account)){
             customerRepository.deleteById(account);

@@ -21,6 +21,16 @@ public class Account {
     @DBRef
     private List<Transaction> transactions;
 
+    private boolean isBlocked ;
+
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        isBlocked = blocked;
+    }
+
     public List<Transaction> getTransactions() {
         return transactions;
     }
@@ -34,6 +44,8 @@ public class Account {
         this.balance = BigDecimal.ZERO;
         this.updatedAt = LocalDateTime.now();
         this.transactions = new ArrayList<>();
+        isBlocked = false;
+
     }
 
     public LocalDateTime getUpdatedAt() {

@@ -41,9 +41,9 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.transfer(accountNumber, amount, receiverNumber));
     }
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
-    public ResponseEntity<Transaction> getTransactionById(@RequestParam String id) {
-        return new ResponseEntity<>(transactionService.getTransactionById(id), HttpStatus.ACCEPTED);
-    }
+//    @GetMapping
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+//    public ResponseEntity<Transaction> getTransactionById(@RequestParam String id) {
+//        return new ResponseEntity<>(transactionService.getTransactionById(id), HttpStatus.ACCEPTED);
+//    }
 }

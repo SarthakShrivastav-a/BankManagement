@@ -26,13 +26,13 @@ public class AccountController {
     private CustomerService customerService;
 
     @GetMapping("/history")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER') and @customerAuthorizationService.isAccountOwner(#account)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<?> history(@RequestParam String account) {
         return new ResponseEntity<>(customerService.getHistory(account), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/info")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER') and @customerAuthorizationService.isAccountOwner(#account)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<Optional<Customer>> getDetails(@RequestParam String account) {
         return new ResponseEntity<>(customerService.getCustomer(account), HttpStatus.OK);
     }

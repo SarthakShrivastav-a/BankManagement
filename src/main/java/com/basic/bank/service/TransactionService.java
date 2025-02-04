@@ -14,95 +14,93 @@ import java.util.Optional;
 @Service
 public class TransactionService {
 
-
     @Autowired
     private TransactionRepository transactionRepository;
 
     @Autowired
     private AccountRepository accountRepository;
 
-//    @Transactional
-    public String deposit(String accountNumber, BigDecimal amount){
-        Optional<Account> accountOptional = accountRepository.findById(accountNumber);
-        if(accountOptional.isPresent()){
-            Account customer = accountOptional.get();
-            customer.setBalance((customer.getBalance().add(amount)));
-            //now update thee transaction data tooooo
-            Transaction transaction = new Transaction();
-            transaction.setAccountNumber(accountNumber);
-            transaction.setType("DEPOSIT");
-            transaction.setAmount(amount);
-            transactionRepository.save(transaction);
-            if (customer.getTransactions() == null) {
-                customer.setTransactions(new ArrayList<>());
-            }
-            customer.getTransactions().add(transaction);
-            accountRepository.save(customer);
-            return "Transaction Completed Succesfully "+customer.getBalance();
+    private void checkIfAccountBlocked(Account account) {
+        if (account.isBlocked()) {
+            throw new IllegalStateException("Your account is blocked. No transactions are allowed.");
         }
-        return "User With That Account Number Not Found";
     }
 
-    public String withdraw(String accountNumber, BigDecimal amount){
-        Optional<Account> customerOptional = accountRepository.findById(accountNumber);
-        if(customerOptional.isPresent()){
-            Account customer = customerOptional.get();
-            if(customer.getBalance().compareTo(amount)>0) {
-                customer.setBalance((customer.getBalance().subtract(amount)));
-                //now update thee transaction data tooooo
+    public String deposit(String accountNumber, BigDecimal amount) {
+        Optional<Account> accountOptional = accountRepository.findById(accountNumber);
+        if (accountOptional.isPresent()) {
+            Account customer = accountOptional.get();
+            try {
+                checkIfAccountBlocked(customer);
+                customer.setBalance(customer.getBalance().add(amount));
                 Transaction transaction = new Transaction();
                 transaction.setAccountNumber(accountNumber);
-                transaction.setType("WITHDRAW");
+                transaction.setType("DEPOSIT");
                 transaction.setAmount(amount);
                 transactionRepository.save(transaction);
-                if (customer.getTransactions() == null) {
-                    customer.setTransactions(new ArrayList<>());
-                }
                 customer.getTransactions().add(transaction);
                 accountRepository.save(customer);
-                return "Transaction Completed Succesfully " + customer.getBalance();
+                return "Transaction completed successfully. Balance: " + customer.getBalance();
+            } catch (IllegalStateException e) {
+                return e.getMessage();
             }
-            return "Not Sufficient Balance";
         }
-        return "User With That Account Number Not Found";
+        return "User with that account number not found.";
     }
-    public String transfer(String accountNumber, BigDecimal amount,String receiverNumber){
+
+    public String withdraw(String accountNumber, BigDecimal amount) {
+        Optional<Account> accountOptional = accountRepository.findById(accountNumber);
+        if (accountOptional.isPresent()) {
+            Account customer = accountOptional.get();
+            try {
+                checkIfAccountBlocked(customer);
+                if (customer.getBalance().compareTo(amount) > 0) {
+                    customer.setBalance(customer.getBalance().subtract(amount));
+                    Transaction transaction = new Transaction();
+                    transaction.setAccountNumber(accountNumber);
+                    transaction.setType("WITHDRAW");
+                    transaction.setAmount(amount);
+                    transactionRepository.save(transaction);
+                    customer.getTransactions().add(transaction);
+                    accountRepository.save(customer);
+                    return "Transaction completed successfully. Balance: " + customer.getBalance();
+                }
+                return "Not sufficient balance.";
+            } catch (IllegalStateException e) {
+                return e.getMessage();
+            }
+        }
+        return "User with that account number not found.";
+    }
+
+    public String transfer(String accountNumber, BigDecimal amount, String receiverNumber) {
         Optional<Account> senderOpt = accountRepository.findById(accountNumber);
         Optional<Account> receiverOpt = accountRepository.findById(receiverNumber);
-        if(senderOpt.isPresent()&& receiverOpt.isPresent()){
+        if (senderOpt.isPresent() && receiverOpt.isPresent()) {
             Account sender = senderOpt.get();
             Account receiver = receiverOpt.get();
-            if(sender.getBalance().compareTo(amount)>0){
-                sender.setBalance(sender.getBalance().subtract(amount));
-                receiver.setBalance(receiver.getBalance().add(amount));
-                //transaction Update
-                //sender
-                Transaction sendTransaction = new Transaction();
-                sendTransaction.setAccountNumber(accountNumber);
-                sendTransaction.setType("TRANSFER");
-                sendTransaction.setAmount(amount);
-                sendTransaction.setReceiverAccount(receiverNumber);
-                transactionRepository.save(sendTransaction);
-                if (receiver.getTransactions() == null) {
-                    receiver.setTransactions(new ArrayList<>());
+            try {
+                checkIfAccountBlocked(sender);
+                if (sender.getBalance().compareTo(amount) > 0) {
+                    sender.setBalance(sender.getBalance().subtract(amount));
+                    receiver.setBalance(receiver.getBalance().add(amount));
+                    Transaction sendTransaction = new Transaction();
+                    sendTransaction.setAccountNumber(accountNumber);
+                    sendTransaction.setType("TRANSFER");
+                    sendTransaction.setAmount(amount);
+                    sendTransaction.setReceiverAccount(receiverNumber);
+                    transactionRepository.save(sendTransaction);
+                    sender.getTransactions().add(sendTransaction);
+                    receiver.getTransactions().add(sendTransaction);
+                    accountRepository.save(sender);
+                    accountRepository.save(receiver);
+                    return "Transfer successfully initiated and completed.";
                 }
-                sender.getTransactions().add(sendTransaction);
-                receiver.getTransactions().add(sendTransaction);
-                accountRepository.save(sender);
-                accountRepository.save(receiver);
-                return "Transfer Succesfully Initiated and Completed";
+                return "Account low on balance.";
+            } catch (IllegalStateException e) {
+                return e.getMessage();
             }
-            return "Account Low On Balance";
         }
-        return "Receiver or Sender account Not Found!";
+        return "Receiver or sender account not found.";
     }
-
-    public Transaction getTransactionById(String id){
-        Optional<Transaction> transaction =  transactionRepository.findById(id);
-        if (transaction.isPresent()){
-            return transaction.get();
-        }
-        return null;
-    }
-
 }
