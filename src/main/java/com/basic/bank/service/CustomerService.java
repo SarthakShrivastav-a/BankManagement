@@ -4,11 +4,14 @@ import com.basic.bank.entity.*;
 import com.basic.bank.repository.AccountRepository;
 import com.basic.bank.repository.AuthUserRepository;
 import com.basic.bank.repository.CustomerRepository;
+import com.basic.bank.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +27,9 @@ public class CustomerService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
 
 
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -86,6 +92,23 @@ public class CustomerService {
         }
         return "User Not Found";
     }
+
+    public BigDecimal getBalance(String accountNumber) {
+        Optional<Account> accountOptional = accountRepository.findById(accountNumber);
+        if (accountOptional.isPresent()) {
+            return accountOptional.get().getBalance();
+        }
+        return null;
+    }
+
+    public List<Transaction> getStatements(String accountNumber, LocalDate startDate, LocalDate endDate) {
+        return transactionRepository.findByAccountNumberAndTimestampBetween(
+                accountNumber,
+                startDate.atStartOfDay(),
+                endDate.atTime(23, 59, 59)
+        );
+    }
+
 
 
 
