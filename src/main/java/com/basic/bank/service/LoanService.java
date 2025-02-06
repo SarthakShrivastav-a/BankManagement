@@ -2,10 +2,13 @@ package com.basic.bank.service;
 
 import com.basic.bank.entity.Account;
 import com.basic.bank.entity.Loan;
+import com.basic.bank.entity.Transaction;
 import com.basic.bank.repository.AccountRepository;
 import com.basic.bank.repository.LoanRepository;
+import com.basic.bank.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -13,12 +16,16 @@ import java.util.Optional;
 @Service
 public class LoanService {
 
+
+    @Autowired
+    private TransactionRepository transactionRepository;
     @Autowired
     private LoanRepository loanRepository;
 
     @Autowired
     private AccountRepository accountRepository;
 
+    @Transactional
     public String applyForLoan(String accountNumber, BigDecimal amount) {
 
         Optional<Loan> existingLoan = loanRepository.findById(accountNumber);
@@ -30,6 +37,15 @@ public class LoanService {
         Loan loan = new Loan(accountNumber, amount, interestRate);
         loanRepository.save(loan);
         Account account = accountRepository.findById(accountNumber).get();
+
+        Transaction transaction = new Transaction();
+        transaction.setAccountNumber(accountNumber);
+        transaction.setType("Loan_Credit");
+        transaction.setAmount(amount);
+        transactionRepository.save(transaction);
+        account.getLoans().add(loan);
+        account.getTransactions().add(transaction);
+        accountRepository.save(account);
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
 
@@ -70,7 +86,13 @@ public class LoanService {
         BigDecimal remainingBalance = loan.getRemainingBalance();
         BigDecimal actualRepaymentAmount = repaymentAmount.compareTo(remainingBalance) > 0 ? remainingBalance : repaymentAmount;
 
+        Transaction transaction = new Transaction();
+        transaction.setAccountNumber(accountNumber);
+        transaction.setType("Loan_Debit");
+        transaction.setAmount(actualRepaymentAmount);
+        transactionRepository.save(transaction);
         account.setBalance(account.getBalance().subtract(actualRepaymentAmount));
+        account.getTransactions().add(transaction);
         accountRepository.save(account);
 
         remainingBalance = remainingBalance.subtract(actualRepaymentAmount);
