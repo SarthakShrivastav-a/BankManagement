@@ -47,18 +47,5 @@ public class customersController {
         String response = customerService.deleteCustomer(account);
         return new  ResponseEntity<>(response,HttpStatus.ACCEPTED);
     }
-//
-//    @PostMapping("/block")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Void> blockAccount(@RequestParam String account) {
-//        customerService.blockAccount(account);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
-//
-//    @PostMapping("/unblock")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Void> unblockAccount(@RequestParam String account) {
-//        customerService.unblockAccount(account);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+
 }
