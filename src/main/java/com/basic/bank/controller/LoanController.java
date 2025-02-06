@@ -36,5 +36,10 @@ public class LoanController {
             @RequestParam BigDecimal repaymentAmount) {
         return ResponseEntity.ok(loanService.repayLoan(accountNumber, repaymentAmount));
     }
+    @PostMapping("/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String approveLoan(@RequestParam String loanRequestId) {
+        return loanService.approveLoan(loanRequestId);
+    }
 }
 
