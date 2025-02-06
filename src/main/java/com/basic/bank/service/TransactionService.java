@@ -1,14 +1,15 @@
 package com.basic.bank.service;
 
 import com.basic.bank.entity.Account;
+import com.basic.bank.entity.Customer;
 import com.basic.bank.entity.Transaction;
 import com.basic.bank.repository.AccountRepository;
+import com.basic.bank.repository.CustomerRepository;
 import com.basic.bank.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -20,9 +21,30 @@ public class TransactionService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private EmailService emailService;
+
     private void checkIfAccountBlocked(Account account) {
         if (account.isBlocked()) {
             throw new IllegalStateException("Your account is blocked. No transactions are allowed.");
+        }
+    }
+
+    private String getEmailByAccountNumber(String accountNumber) {
+        Optional<Customer> customerOpt = customerRepository.findById(accountNumber);
+        return customerOpt.map(Customer::getEmail).orElse(null);
+    }
+
+    private void sendTransactionEmail(String accountNumber, String transactionType, BigDecimal amount, BigDecimal balance) {
+        String email = getEmailByAccountNumber(accountNumber);
+        if (email != null) {
+            String subject = "Bank Transaction Notification";
+            String body = String.format("Dear Customer,\n\nYour %s of ₹%s was successful. Your updated balance is ₹%s.\n\nThank you for banking with us!",
+                    transactionType, amount, balance);
+            emailService.sendEmail(email, body, subject);
         }
     }
 
@@ -40,6 +62,9 @@ public class TransactionService {
                 transactionRepository.save(transaction);
                 customer.getTransactions().add(transaction);
                 accountRepository.save(customer);
+
+                sendTransactionEmail(accountNumber, "deposit", amount, customer.getBalance());
+
                 return "Transaction completed successfully. Balance: " + customer.getBalance();
             } catch (IllegalStateException e) {
                 return e.getMessage();
@@ -63,6 +88,9 @@ public class TransactionService {
                     transactionRepository.save(transaction);
                     customer.getTransactions().add(transaction);
                     accountRepository.save(customer);
+
+                    sendTransactionEmail(accountNumber, "withdrawal", amount, customer.getBalance());
+
                     return "Transaction completed successfully. Balance: " + customer.getBalance();
                 }
                 return "Not sufficient balance.";
@@ -94,6 +122,9 @@ public class TransactionService {
                     receiver.getTransactions().add(sendTransaction);
                     accountRepository.save(sender);
                     accountRepository.save(receiver);
+
+                    sendTransactionEmail(accountNumber, "transfer", amount, sender.getBalance());
+
                     return "Transfer successfully initiated and completed.";
                 }
                 return "Account low on balance.";
