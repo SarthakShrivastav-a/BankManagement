@@ -14,6 +14,17 @@ public class SignUp {
     @NotBlank(message = "Name is required")
     private String name;
 
+    @NotBlank(message = "Account type is required CURRENT SAVING FIXED")
+    private String accountType;
+
+    public @NotBlank(message = "Account type is required CURRENT SAVING FIXED") String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(@NotBlank(message = "Account type is required CURRENT SAVING FIXED") String accountType) {
+        this.accountType = accountType;
+    }
+
     @Email(message = "Invalid email format")
     @NotBlank(message = "Email is required")
     private String email;

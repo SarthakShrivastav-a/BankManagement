@@ -8,12 +8,16 @@ import com.basic.bank.repository.CustomerRepository;
 import com.basic.bank.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
 public class TransactionService {
+
+    private static final BigDecimal SAVINGS_DAILY_LIMIT = new BigDecimal("50000");
+    private static final BigDecimal CURRENT_DAILY_LIMIT = new BigDecimal("100000");
 
     @Autowired
     private TransactionRepository transactionRepository;
@@ -48,6 +52,7 @@ public class TransactionService {
         }
     }
 
+    @Transactional
     public String deposit(String accountNumber, BigDecimal amount) {
         Optional<Account> accountOptional = accountRepository.findById(accountNumber);
         if (accountOptional.isPresent()) {
@@ -73,13 +78,29 @@ public class TransactionService {
         return "User with that account number not found.";
     }
 
+    @Transactional
     public String withdraw(String accountNumber, BigDecimal amount) {
         Optional<Account> accountOptional = accountRepository.findById(accountNumber);
         if (accountOptional.isPresent()) {
             Account customer = accountOptional.get();
             try {
                 checkIfAccountBlocked(customer);
-                if (customer.getBalance().compareTo(amount) > 0) {
+                switch (customer.getAccountType()) {
+                    case "FIXED":
+                        return "Transaction cannot be completed on a fixed deposit account.";
+                    case "SAVINGS":
+                        if (amount.compareTo(SAVINGS_DAILY_LIMIT) > 0) {
+                            return "Cannot withdraw more than ₹50,000 in a single day from a savings account.";
+                        }
+                        break;
+                    case "CURRENT":
+                        if (amount.compareTo(CURRENT_DAILY_LIMIT) > 0) {
+                            return "Cannot withdraw more than ₹100,000 in a single day from a current account.";
+                        }
+                        break;
+                }
+
+                if (customer.getBalance().compareTo(amount) >= 0) {
                     customer.setBalance(customer.getBalance().subtract(amount));
                     Transaction transaction = new Transaction();
                     transaction.setAccountNumber(accountNumber);
@@ -92,8 +113,9 @@ public class TransactionService {
                     sendTransactionEmail(accountNumber, "withdrawal", amount, customer.getBalance());
 
                     return "Transaction completed successfully. Balance: " + customer.getBalance();
+                } else {
+                    return "Not sufficient balance.";
                 }
-                return "Not sufficient balance.";
             } catch (IllegalStateException e) {
                 return e.getMessage();
             }
