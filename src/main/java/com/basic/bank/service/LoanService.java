@@ -1,13 +1,7 @@
 package com.basic.bank.service;
 
-import com.basic.bank.entity.Account;
-import com.basic.bank.entity.Loan;
-import com.basic.bank.entity.LoanRequest;
-import com.basic.bank.entity.Transaction;
-import com.basic.bank.repository.AccountRepository;
-import com.basic.bank.repository.LoanRepository;
-import com.basic.bank.repository.LoanRequestRepository;
-import com.basic.bank.repository.TransactionRepository;
+import com.basic.bank.entity.*;
+import com.basic.bank.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +24,16 @@ public class LoanService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
     @Transactional
     public String applyForLoan(String accountNumber, BigDecimal amount) {
         Optional<Account> accountOpt = accountRepository.findById(accountNumber);
+        Optional<Customer> customer = customerRepository.findById(accountNumber);
         if (accountOpt.isEmpty()) {
             return "Account not found.";
         }
@@ -44,6 +45,10 @@ public class LoanService {
 
         LoanRequest loanRequest = new LoanRequest(accountNumber, amount, "PENDING");
         loanRequestRepository.save(loanRequest);
+
+        String message = "Loan application submitted for account number " + accountNumber +
+                ". Loan request ID is " + loanRequest.getId() + ".";
+        emailService.sendEmail(customer.get().getEmail(), message, "Loan Application Submitted");
 
         return "Loan request successfully submitted for account: " + accountNumber + ". Pending approval.";
     }
@@ -84,17 +89,12 @@ public class LoanService {
         loanRequest.setStatus("APPROVED");
         loanRequestRepository.save(loanRequest);
 
-        return "Loan successfully approved and credited for account: " + loanRequest.getAccountNumber();
-    }
+        Optional<Customer> customer = customerRepository.findById(loanRequest.getAccountNumber());
 
-    public String getLoanStatus(String accountNumber) {
-        Optional<Loan> loan = loanRepository.findById(accountNumber);
-        if (loan.isEmpty()) {
-            return "No loan found for this account.";
-        }
-        Loan existingLoan = loan.get();
-        return "Loan Status for account " + accountNumber + ": Remaining Balance: " +
-                existingLoan.getRemainingBalance() + ", Due Date: " + existingLoan.getDueDate();
+        String message = "Your loan request " + loanRequestId + " has been approved.";
+        emailService.sendEmail(customer.get().getEmail(), message, "Loan Approval");
+
+        return "Loan successfully approved and credited for account: " + loanRequest.getAccountNumber();
     }
 
     public String repayLoan(String accountNumber, BigDecimal repaymentAmount) {
@@ -133,16 +133,33 @@ public class LoanService {
 
         remainingBalance = remainingBalance.subtract(actualRepaymentAmount);
 
+        Optional<Customer> customer = customerRepository.findById(accountNumber);
+
+        String repaymentMessage = "Loan repayment of INR " + actualRepaymentAmount + " completed.";
+        emailService.sendEmail(customer.get().getEmail(), repaymentMessage, "Loan Repayment");
+
         if (remainingBalance.compareTo(BigDecimal.ZERO) <= 0) {
             loan.setRemainingBalance(BigDecimal.ZERO);
             loan.setActive(false);
             loanRepository.save(loan);
-            return "Loan fully repaid. No remaining balance.";
+
+            String completionMessage = "Loan fully repaid. No remaining balance.";
+            emailService.sendEmail(customer.get().getEmail(), completionMessage, "Loan Repayment Completion");
+            return completionMessage;
         }
 
         loan.setRemainingBalance(remainingBalance);
         loanRepository.save(loan);
 
-        return "Repayment successful. Remaining Balance: " + remainingBalance;
+        return repaymentMessage + " Remaining Balance: " + remainingBalance;
+    }
+    public String getLoanStatus(String accountNumber) {
+        Optional<Loan> loan = loanRepository.findById(accountNumber);
+        if (loan.isEmpty()) {
+            return "No loan found for this account.";
+        }
+        Loan existingLoan = loan.get();
+        return "Loan Status for account " + accountNumber + ": Remaining Balance: " +
+                existingLoan.getRemainingBalance() + ", Due Date: " + existingLoan.getDueDate();
     }
 }
