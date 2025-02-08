@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
-public class LoanTransactionPdfService {
+public class PdfService {
 
     private static final String BANK_LOGO_PATH = "src/main/resources/static/images/img.png";
     private static final String BANK_NAME = "SARTHAK'S Bank Pvt. Ltd.";
