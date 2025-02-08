@@ -18,6 +18,16 @@ public class Account {
     private BigDecimal balance;
     private LocalDateTime updatedAt;
 
+    private String accountType;
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
     @DBRef
     private List<Transaction> transactions;
 
@@ -50,13 +60,14 @@ public class Account {
         this.transactions = transactions;
     }
 
-    public Account(String accountNumber){
+    public Account(String accountNumber,String accountType){
         this.accountNumber = accountNumber;
         this.balance = BigDecimal.ZERO;
         this.updatedAt = LocalDateTime.now();
         this.transactions = new ArrayList<>();
         this.loans = new ArrayList<>();
         isBlocked = false;
+        this.accountType = accountType;
 
     }
 

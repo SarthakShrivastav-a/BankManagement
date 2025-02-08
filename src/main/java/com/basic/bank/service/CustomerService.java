@@ -41,7 +41,7 @@ public class CustomerService {
         String passWord = encoder.encode(signUp.getPassword());
         AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"CUSTOMER");
         Customer customer = new Customer(accNumber, signUp.getName(), signUp.getEmail(), signUp.getPhoneNumber());
-        Account account = new Account(accNumber);
+        Account account = new Account(accNumber,signUp.getAccountType());
         authUserRepository.save(authUser);
         customerRepository.save(customer);
         accountRepository.save(account);
