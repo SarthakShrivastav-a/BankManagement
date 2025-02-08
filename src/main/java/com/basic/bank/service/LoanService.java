@@ -99,6 +99,7 @@ public class LoanService {
 
     public String repayLoan(String accountNumber, BigDecimal repaymentAmount) {
         Optional<Loan> loanOpt = loanRepository.findById(accountNumber);
+
         if (loanOpt.isEmpty()) {
             return "No active loan found for this account.";
         }
