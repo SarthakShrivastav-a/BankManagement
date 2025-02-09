@@ -11,6 +11,40 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = false)  // this will cause an error if unknown fields are sent
 public class SignUp {
 
+    @NotBlank(message = "Address Is required")
+    private String address;
+
+    @NotBlank(message = "Address Is required")
+    private String citizenship;
+
+    public @NotBlank(message = "Address Is required") String getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(@NotBlank(message = "Address Is required") String occupation) {
+        this.occupation = occupation;
+    }
+
+    public @NotBlank(message = "Address Is required") String getCitizenship() {
+        return citizenship;
+    }
+
+    public void setCitizenship(@NotBlank(message = "Address Is required") String citizenship) {
+        this.citizenship = citizenship;
+    }
+
+    public @NotBlank(message = "Address Is required") String getAddress() {
+        return address;
+    }
+
+    public void setAddress(@NotBlank(message = "Address Is required") String address) {
+        this.address = address;
+    }
+
+    @NotBlank(message = "Address Is required")
+    private String occupation;
+
+
     @NotBlank(message = "Name is required")
     private String name;
 

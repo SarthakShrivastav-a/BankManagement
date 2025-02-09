@@ -276,7 +276,8 @@ public class TransactionService {
         return "User with that account number not found.";
     }
 
-    public String transfer(String accountNumber, BigDecimal amount, String receiverNumber) {
+    @Transactional
+    public String transfer(String accountNumber, BigDecimal amount, String receiverNumber,String message) {
         Optional<Account> senderOpt = accountRepository.findById(accountNumber);
         Optional<Account> receiverOpt = accountRepository.findById(receiverNumber);
         if (senderOpt.isPresent() && receiverOpt.isPresent()) {
@@ -292,6 +293,7 @@ public class TransactionService {
                 transaction.setType("TRANSFER");
                 transaction.setAmount(amount);
                 transaction.setReceiverAccount(receiverNumber);
+                transaction.setMessage(message);
                     transactionRepository.save(transaction);
                     sender.getTransactions().add(transaction);
                     receiver.getTransactions().add(transaction);

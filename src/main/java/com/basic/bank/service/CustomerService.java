@@ -40,7 +40,7 @@ public class CustomerService {
         String accNumber = generateAccountNumber();
         String passWord = encoder.encode(signUp.getPassword());
         AuthUser authUser = new AuthUser(accNumber, signUp.getEmail(),passWord,"CUSTOMER");
-        Customer customer = new Customer(accNumber, signUp.getName(), signUp.getEmail(), signUp.getPhoneNumber());
+        Customer customer = new Customer(accNumber, signUp.getName(), signUp.getEmail(), signUp.getPhoneNumber(), signUp.getAddress(), signUp.getCitizenship(), signUp.getOccupation());
         Account account = new Account(accNumber,signUp.getAccountType());
         authUserRepository.save(authUser);
         customerRepository.save(customer);
@@ -65,19 +65,33 @@ public class CustomerService {
     @Transactional
     public Customer updateUser(String account,Customer customer){
         Optional<Customer> customerOpt = customerRepository.findById(account);
+        Optional<AuthUser> AuthOpt = authUserRepository.findById(account);
+        Optional<Account> accountOptional = accountRepository.findById(account);
         if (customerOpt.isPresent()){
             Customer updatedCustomer = customerOpt.get();
+            AuthUser authUser = AuthOpt.get();
             if (customer.getName() != null) {
                 updatedCustomer.setName(customer.getName());
             }
             if (customer.getEmail() != null) {
                 updatedCustomer.setEmail(customer.getEmail());
+                authUser.setEmail(customer.getEmail());
             }
             if (customer.getPhoneNumber() != null) {
                 updatedCustomer.setPhoneNumber(customer.getPhoneNumber());
             }
+            if (customer.getAddress() != null) {
+                updatedCustomer.setAddress(customer.getAddress());
+            }
+            if (customer.getOccupation() != null) {
+                updatedCustomer.setOccupation(customer.getOccupation());
+            }
+            if (customer.getCitizenship() != null) {
+                updatedCustomer.setCitizenship(customer.getCitizenship());
+            }
 
             customerRepository.save(updatedCustomer);
+            authUserRepository.save(authUser);
             return updatedCustomer;
         }
         return null;

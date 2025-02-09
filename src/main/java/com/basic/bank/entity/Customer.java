@@ -17,11 +17,42 @@ public class Customer {
     private String email;
     private String phoneNumber;
 
-    public Customer(String accountNumber, String name, String email, String phoneNumber) {
+    private String address;
+    private String citizenship;
+    private String occupation;
+
+    public String getCitizenship() {
+        return citizenship;
+    }
+
+    public void setCitizenship(String citizenship) {
+        this.citizenship = citizenship;
+    }
+
+    public String getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(String occupation) {
+        this.occupation = occupation;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Customer(String accountNumber, String name, String email, String phoneNumber,String address,String citizenship,String occupation) {
         this.accountNumber = accountNumber;
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.citizenship=citizenship;
+        this.occupation=occupation;
     }
 
     public String getAccountNumber() {
