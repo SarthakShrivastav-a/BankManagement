@@ -99,5 +99,9 @@ public class FixedDeposit {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public void setMaturityAmount(BigDecimal maturityAmount) {
+        this.maturityAmount = maturityAmount;
+    }
 }
 

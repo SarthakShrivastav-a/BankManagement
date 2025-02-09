@@ -15,6 +15,17 @@ public class Account {
     @Id
     private String accountNumber;
 
+    @DBRef
+    private List<FixedDeposit> fixedDeposits;
+
+    public List<FixedDeposit> getFixedDeposits() {
+        return fixedDeposits;
+    }
+
+    public void setFixedDeposits(List<FixedDeposit> fixedDeposits) {
+        this.fixedDeposits = fixedDeposits;
+    }
+
     private BigDecimal balance;
     private LocalDateTime updatedAt;
 
