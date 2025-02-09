@@ -21,7 +21,15 @@ public class Transaction {
     private BigDecimal amount;
     private String receiverAccount;
     private LocalDateTime timestamp = LocalDateTime.now();
+    private String message;
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
     public String getTransactionId() {
         return transactionId;

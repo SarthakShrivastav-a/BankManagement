@@ -56,9 +56,9 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
-    public ResponseEntity<String> transfer(@RequestParam BigDecimal amount, @RequestParam String receiverNumber) {
+    public ResponseEntity<String> transfer(@RequestParam BigDecimal amount, @RequestParam String receiverNumber,@RequestParam String message) {
         String accountNumber = getAccountNumberFromToken();
-        return ResponseEntity.ok(transactionService.transfer(accountNumber, amount, receiverNumber));
+        return ResponseEntity.ok(transactionService.transfer(accountNumber, amount, receiverNumber,message));
     }
 }
 
