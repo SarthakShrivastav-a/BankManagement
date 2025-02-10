@@ -16,10 +16,8 @@ public class FixedDepositController {
     @Autowired
     private FixedDepositService fixedDepositService;
 
-    /**
-     * Open a new Fixed Deposit (FD).
-     */
-    @PostMapping
+
+    @PostMapping("/create")
     public FixedDeposit openFixedDeposit(@RequestParam String accountId,
                                          @RequestParam BigDecimal depositAmount,
                                          @RequestParam int months) {
@@ -36,7 +34,7 @@ public class FixedDepositController {
         return fixedDepositService.getFixedDepositById(fdId);
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<FixedDeposit> getFixedDepositsByAccount(@RequestParam String accountId) {
         return fixedDepositService.getFixedDepositsByAccount(accountId);
     }

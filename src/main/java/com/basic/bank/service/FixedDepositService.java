@@ -6,6 +6,7 @@ import com.basic.bank.repository.AccountRepository;
 import com.basic.bank.repository.FixedDepositRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,34 +22,33 @@ public class FixedDepositService {
     @Autowired
     private AccountRepository accountRepository;
 
-    /**
-     * Open a new Fixed Deposit (FD) for an account.
-     */
+
+    @Transactional
     public FixedDeposit openFixedDeposit(String accountId, BigDecimal depositAmount, int months) {
         if (depositAmount.compareTo(BigDecimal.valueOf(1000)) < 0) {
             throw new IllegalArgumentException("Minimum deposit amount is 1000.");
         }
 
-        LocalDate startDate = LocalDate.now();
-        LocalDate maturityDate = startDate.plusMonths(months);
-
-        // Create and save FD
-        FixedDeposit fd = new FixedDeposit(accountId, depositAmount, startDate, maturityDate);
-        FixedDeposit savedFD = fixedDepositRepository.save(fd);
-
-        // Link FD to account
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found."));
 
-        account.getFixedDeposits().add(savedFD);
-        accountRepository.save(account);
+        if (account.getBalance().compareTo(depositAmount) < 0) {
+            throw new IllegalArgumentException("Not enough balance");
+        }
 
-        return savedFD;
+        LocalDate startDate = LocalDate.now();
+        LocalDate maturityDate = startDate.plusMonths(months);
+
+        FixedDeposit fd = new FixedDeposit(accountId, depositAmount, startDate, maturityDate);
+
+        account.setBalance(account.getBalance().subtract(depositAmount));
+        account.getFixedDeposits().add(fd);
+
+        accountRepository.save(account);
+        return fixedDepositRepository.save(fd);
     }
 
-    /**
-     * Close an existing FD before maturity, with penalty on interest.
-     */
+    @Transactional
     public FixedDeposit closeFixedDeposit(String fdId) {
         FixedDeposit fd = fixedDepositRepository.findById(fdId)
                 .orElseThrow(() -> new IllegalArgumentException("Fixed Deposit not found."));
@@ -57,29 +57,34 @@ public class FixedDepositService {
             throw new IllegalStateException("FD already closed.");
         }
 
-        fd.setStatus("CLOSED");
-
-        // Apply penalty for early closure if not matured
         LocalDate today = LocalDate.now();
+        BigDecimal maturityAmount = fd.getDepositAmount();
+
         if (today.isBefore(fd.getMaturityDate())) {
             BigDecimal penalty = fd.getDepositAmount().multiply(BigDecimal.valueOf(0.01)); // 1% penalty
-            fd.setMaturityAmount(fd.getDepositAmount().subtract(penalty));
+            maturityAmount = maturityAmount.subtract(penalty);
         }
 
+        fd.setStatus("CLOSED");
+        fd.setMaturityAmount(maturityAmount);
+
+
+        Account account = accountRepository.findById(fd.getAccountNumber())
+                .orElseThrow(() -> new IllegalArgumentException("Associated account not found."));
+
+        account.setBalance(account.getBalance().add(maturityAmount));
+
+        accountRepository.save(account);
         return fixedDepositRepository.save(fd);
     }
 
-    /**
-     * Get the details of an FD by FD ID.
-     */
+
     public FixedDeposit getFixedDepositById(String fdId) {
         return fixedDepositRepository.findById(fdId)
                 .orElseThrow(() -> new IllegalArgumentException("Fixed Deposit not found."));
     }
 
-    /**
-     * Get all active FDs for a specific account.
-     */
+
     public List<FixedDeposit> getFixedDepositsByAccount(String accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found."));
@@ -87,9 +92,6 @@ public class FixedDepositService {
         return account.getFixedDeposits();
     }
 
-    /**
-     * Calculate and return the maturity amount of a given FD.
-     */
     public BigDecimal calculateMaturityAmount(String fdId) {
         FixedDeposit fd = getFixedDepositById(fdId);
         return fd.getMaturityAmount();
