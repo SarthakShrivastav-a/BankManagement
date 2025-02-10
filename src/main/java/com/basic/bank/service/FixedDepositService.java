@@ -2,8 +2,10 @@ package com.basic.bank.service;
 
 import com.basic.bank.entity.Account;
 import com.basic.bank.entity.FixedDeposit;
+import com.basic.bank.entity.Transaction;
 import com.basic.bank.repository.AccountRepository;
 import com.basic.bank.repository.FixedDepositRepository;
+import com.basic.bank.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,9 @@ public class FixedDepositService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
+
 
     @Transactional
     public FixedDeposit openFixedDeposit(String accountId, BigDecimal depositAmount, int months) {
@@ -36,6 +41,7 @@ public class FixedDepositService {
             throw new IllegalArgumentException("Not enough balance");
         }
 
+
         LocalDate startDate = LocalDate.now();
         LocalDate maturityDate = startDate.plusMonths(months);
 
@@ -43,6 +49,12 @@ public class FixedDepositService {
 
         account.setBalance(account.getBalance().subtract(depositAmount));
         fd = fixedDepositRepository.save(fd);
+        Transaction transaction = new Transaction();
+        transaction.setAccountNumber(accountId);
+        transaction.setType("FD_TRANSFER");
+        transaction.setAmount(depositAmount);
+        transactionRepository.save(transaction);
+        account.getTransactions().add(transaction);
         account.getFixedDeposits().add(fd);
         accountRepository.save(account);
         return fd;
@@ -75,7 +87,16 @@ public class FixedDepositService {
 
         account.setBalance(account.getBalance().add(maturityAmount));
 
+
+
+        Transaction transaction = new Transaction();
+        transaction.setAccountNumber(fd.getAccountNumber());
+        transaction.setType("FD_Credit");
+        transaction.setAmount(maturityAmount);
+        transactionRepository.save(transaction);
+        account.getTransactions().add(transaction);
         accountRepository.save(account);
+
         return fixedDepositRepository.save(fd);
     }
 
