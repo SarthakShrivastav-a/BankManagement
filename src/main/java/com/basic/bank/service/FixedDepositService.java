@@ -42,10 +42,11 @@ public class FixedDepositService {
         FixedDeposit fd = new FixedDeposit(accountId, depositAmount, startDate, maturityDate);
 
         account.setBalance(account.getBalance().subtract(depositAmount));
+        fd = fixedDepositRepository.save(fd);
         account.getFixedDeposits().add(fd);
-
         accountRepository.save(account);
-        return fixedDepositRepository.save(fd);
+        return fd;
+
     }
 
     @Transactional

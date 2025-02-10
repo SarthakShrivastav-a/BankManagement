@@ -1,3 +1,16 @@
+package com.basic.bank.service;
+
+import com.basic.bank.entity.*;
+import com.basic.bank.repository.*;
+import com.basic.bank.service.CustomerService;
+import com.basic.bank.service.EmailService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
 //package com.basic.bank.service;
 //
 //import com.basic.bank.entity.*;
@@ -164,21 +177,11 @@
 //                existingLoan.getRemainingBalance() + ", Due Date: " + existingLoan.getDueDate();
 //    }
 //}
-package com.basic.bank.service;
 
-import com.basic.bank.entity.*;
-import com.basic.bank.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
-import java.util.Optional;
+
 
 @Service
 public class LoanService {
-
-    @Autowired
-    private TransactionRepository transactionRepository;
 
     @Autowired
     private LoanRepository loanRepository;
@@ -190,33 +193,29 @@ public class LoanService {
     private AccountRepository accountRepository;
 
     @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private EmailService emailService;
 
     @Autowired
     private CustomerRepository customerRepository;
 
-    @Autowired
-    private PdfService pdfService;
-
-        @Transactional
+    @Transactional
     public String applyForLoan(String accountNumber, BigDecimal amount) {
         Optional<Account> accountOpt = accountRepository.findById(accountNumber);
-        Optional<Customer> customer = customerRepository.findById(accountNumber);
         if (accountOpt.isEmpty()) {
             return "Account not found.";
-        }
-
-        Optional<Loan> existingLoan = loanRepository.findById(accountNumber);
-        if (existingLoan.isPresent() && existingLoan.get().isActive()) {
-            return "A loan already exists for this account.";
         }
 
         LoanRequest loanRequest = new LoanRequest(accountNumber, amount, "PENDING");
         loanRequestRepository.save(loanRequest);
 
+        Optional<Customer>customerOpt = customerRepository.findById(accountNumber);
+
         String message = "Loan application submitted for account number " + accountNumber +
                 ". Loan request ID is " + loanRequest.getId() + ".";
-        emailService.sendEmail(customer.get().getEmail(), message, "Loan Application Submitted");
+        emailService.sendEmail(customerOpt.get().getEmail(), message, "Loan Application Submitted");
 
         return "Loan request successfully submitted for account: " + accountNumber + ". Pending approval.";
     }
@@ -238,10 +237,11 @@ public class LoanService {
             return "Account not found for loan request.";
         }
 
-        BigDecimal interestRate = new BigDecimal("0.05");
+        BigDecimal interestRate = new BigDecimal("0.05"); // Example 5% interest
         Loan loan = new Loan(loanRequest.getAccountNumber(), loanRequest.getAmount(), interestRate);
-        loanRepository.save(loan);
+        loanRepository.save(loan); // Save new loan with unique loanId
 
+        // Credit Loan Amount to Account
         Account account = accountOpt.get();
         Transaction transaction = new Transaction();
         transaction.setAccountNumber(loanRequest.getAccountNumber());
@@ -257,25 +257,26 @@ public class LoanService {
         loanRequest.setStatus("APPROVED");
         loanRequestRepository.save(loanRequest);
 
-        Optional<Customer> customer = customerRepository.findById(loanRequest.getAccountNumber());
-//        String receiptPath = pdfService.generateLoanTransactionReceipt(account.getAccountNumber(),loanRequestId,);
-        emailService.sendEmail(customer.get().getEmail(), ("Your loan Request with ID " +loanRequestId +" has been approved. Amount has been credited to your account."), "Loan Approval");
+        Optional<Customer>customerOpt = customerRepository.findById(loanRequest.getAccountNumber());
+
+        emailService.sendEmail(customerOpt.get().getEmail(), "Your loan request " + loanRequestId + " has been approved.", "Loan Approval");
 
         return "Loan successfully approved and credited for account: " + loanRequest.getAccountNumber();
     }
 
-    public String repayLoan(String accountNumber, BigDecimal repaymentAmount) {
-        Optional<Loan> loanOpt = loanRepository.findById(accountNumber);
+    public String repayLoan(String loanId, BigDecimal repaymentAmount) {
+        Optional<Loan> loanOpt = loanRepository.findById(loanId);
+
         if (loanOpt.isEmpty()) {
-            return "No active loan found for this account.";
+            return "No active loan found with this ID.";
         }
 
         Loan loan = loanOpt.get();
         if (!loan.isActive()) {
-            return "Loan for this account is already settled.";
+            return "Loan is already settled.";
         }
 
-        Optional<Account> accountOpt = accountRepository.findById(accountNumber);
+        Optional<Account> accountOpt = accountRepository.findById(loan.getAccountNumber());
         if (accountOpt.isEmpty()) {
             return "Account not found.";
         }
@@ -289,7 +290,7 @@ public class LoanService {
         BigDecimal actualRepaymentAmount = repaymentAmount.compareTo(remainingBalance) > 0 ? remainingBalance : repaymentAmount;
 
         Transaction transaction = new Transaction();
-        transaction.setAccountNumber(accountNumber);
+        transaction.setAccountNumber(loan.getAccountNumber());
         transaction.setType("Loan_Debit");
         transaction.setAmount(actualRepaymentAmount);
         transactionRepository.save(transaction);
@@ -300,29 +301,33 @@ public class LoanService {
 
         remainingBalance = remainingBalance.subtract(actualRepaymentAmount);
 
-        Optional<Customer> customer = customerRepository.findById(accountNumber);
-        byte [] pdf = pdfService.generateLoanRepaymentReceipt(accountNumber,loanOpt.get().getAccountNumber(),repaymentAmount,remainingBalance);
-        emailService.sendEmailWithAttachment(customer.get().getEmail(), "Loan repayment receipt", "Loan Repayment", pdf,"Loan Receipt");
+        Optional<Customer>customerOpt = customerRepository.findById(loan.getAccountNumber());
+
+        emailService.sendEmail(customerOpt.get().getEmail(), "Loan repayment of INR " + actualRepaymentAmount + " completed.", "Loan Repayment");
 
         if (remainingBalance.compareTo(BigDecimal.ZERO) <= 0) {
             loan.setRemainingBalance(BigDecimal.ZERO);
             loan.setActive(false);
             loanRepository.save(loan);
-            pdfService.generateLoanCompletionReceipt(accountNumber,loanOpt.get().getAccountNumber());
+
+            emailService.sendEmail(customerOpt.get().getEmail(), "Loan fully repaid. No remaining balance.", "Loan Repayment Completion");
             return "Loan fully repaid. No remaining balance.";
         }
 
         loan.setRemainingBalance(remainingBalance);
         loanRepository.save(loan);
+
         return "Loan repayment successful. Remaining Balance: " + remainingBalance;
     }
-        public String getLoanStatus(String accountNumber) {
-        Optional<Loan> loan = loanRepository.findById(accountNumber);
-        if (loan.isEmpty()) {
-            return "No loan found for this account.";
+
+    public String getLoanStatus(String loanId) {
+        Optional<Loan> loanOpt = loanRepository.findById(loanId);
+        if (loanOpt.isEmpty()) {
+            return "No loan found with this ID.";
         }
-        Loan existingLoan = loan.get();
-        return "Loan Status for account " + accountNumber + ": Remaining Balance: " +
-                existingLoan.getRemainingBalance() + ", Due Date: " + existingLoan.getDueDate();
+        Loan loan = loanOpt.get();
+        return "Loan Status: Remaining Balance: " + loan.getRemainingBalance() + ", Due Date: " + loan.getDueDate();
     }
 }
+
+

@@ -32,9 +32,9 @@ public class LoanController {
     @PostMapping("/repay")
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<String> repayLoan(
-            @RequestParam String accountNumber,
+            @RequestParam String loanId,
             @RequestParam BigDecimal repaymentAmount) {
-        return ResponseEntity.ok(loanService.repayLoan(accountNumber, repaymentAmount));
+        return ResponseEntity.ok(loanService.repayLoan(loanId, repaymentAmount));
     }
     @PostMapping("/approve")
     @PreAuthorize("hasRole('ADMIN')")
