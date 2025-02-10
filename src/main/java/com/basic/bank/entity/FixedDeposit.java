@@ -1,5 +1,6 @@
 package com.basic.bank.entity;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -9,6 +10,8 @@ import java.util.Collections;
 @Document(collection = "fixedDeposits")
 public class FixedDeposit {
 
+    @Id
+    private String id;
     private String accountNumber;
     private BigDecimal depositAmount;
     private double interestRate;
@@ -100,8 +103,18 @@ public class FixedDeposit {
         this.status = status;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void setMaturityAmount(BigDecimal maturityAmount) {
         this.maturityAmount = maturityAmount;
+
+
     }
 }
 

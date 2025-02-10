@@ -15,16 +15,7 @@ public class Account {
     @Id
     private String accountNumber;
 
-    @DBRef
-    private List<FixedDeposit> fixedDeposits;
 
-    public List<FixedDeposit> getFixedDeposits() {
-        return fixedDeposits;
-    }
-
-    public void setFixedDeposits(List<FixedDeposit> fixedDeposits) {
-        this.fixedDeposits = fixedDeposits;
-    }
 
     private BigDecimal balance;
     private LocalDateTime updatedAt;
@@ -53,6 +44,17 @@ public class Account {
         this.loans = loans;
     }
 
+    @DBRef
+    private List<FixedDeposit> fixedDeposits;
+
+    public List<FixedDeposit> getFixedDeposits() {
+        return fixedDeposits;
+    }
+
+    public void setFixedDeposits(List<FixedDeposit> fixedDeposits) {
+        this.fixedDeposits = fixedDeposits;
+    }
+
     private boolean isBlocked ;
 
     public boolean isBlocked() {
@@ -76,6 +78,7 @@ public class Account {
         this.balance = BigDecimal.ZERO;
         this.updatedAt = LocalDateTime.now();
         this.transactions = new ArrayList<>();
+        this.fixedDeposits = new ArrayList<>();
         this.loans = new ArrayList<>();
         isBlocked = false;
         this.accountType = accountType;
