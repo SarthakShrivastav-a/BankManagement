@@ -1,6 +1,4 @@
 package com.basic.bank.entity;
-
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -73,13 +71,25 @@ public class Account {
         this.transactions = transactions;
     }
 
-    public Account(String accountNumber,String accountType){
+    @DBRef
+    private List<RecurringPayment> recurringPayments;
+
+    public List<RecurringPayment> getRecurringPayments() {
+        return recurringPayments;
+    }
+
+    public void setRecurringPayments(List<RecurringPayment> recurringPayments) {
+        this.recurringPayments = recurringPayments;
+    }
+
+    public Account(String accountNumber, String accountType){
         this.accountNumber = accountNumber;
         this.balance = BigDecimal.ZERO;
         this.updatedAt = LocalDateTime.now();
         this.transactions = new ArrayList<>();
         this.fixedDeposits = new ArrayList<>();
         this.loans = new ArrayList<>();
+        this.recurringPayments=new ArrayList<>();
         isBlocked = false;
         this.accountType = accountType;
 
