@@ -24,8 +24,18 @@ public class Loan {
     private boolean isActive;
     private LocalDate nextInstallmentDate;
 
+    private BigDecimal MonthlyInstallment;
+
     @DBRef
     private List<Transaction> loanInstallments;
+
+    public BigDecimal getMonthlyInstallment() {
+        return MonthlyInstallment;
+    }
+
+    public void setMonthlyInstallment(BigDecimal monthlyInstallment) {
+        MonthlyInstallment = monthlyInstallment;
+    }
 
     public Loan() {}
 

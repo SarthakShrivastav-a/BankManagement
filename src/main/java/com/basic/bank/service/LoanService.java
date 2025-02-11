@@ -402,13 +402,17 @@ public class LoanService {
             return "Account not found for loan request.";
         }
 
-        BigDecimal interestRate = new BigDecimal("0.05"); // Example 5% interest
-        int loanTermMonths = 12; // Default term
+        int loanTermMonths = 12; // Default term (Consider fetching this from the request)
+        BigDecimal interestRate = calculateInterestRate(loanTermMonths);
+
+        BigDecimal totalInterest = loanRequest.getAmount().multiply(interestRate).divide(BigDecimal.valueOf(100));
+        BigDecimal finalAmount = loanRequest.getAmount().add(totalInterest);
+        BigDecimal monthlyInstallment = finalAmount.divide(BigDecimal.valueOf(loanTermMonths), RoundingMode.HALF_UP);
 
         Loan loan = new Loan(loanRequest.getAccountNumber(), loanRequest.getAmount(), interestRate, loanTermMonths);
-        loanRepository.save(loan); // Save new loan with unique loanId
+        loan.setMonthlyInstallment(monthlyInstallment);
+        loanRepository.save(loan);
 
-        // Credit Loan Amount to Account
         Account account = accountOpt.get();
         Transaction transaction = new Transaction();
         transaction.setAccountNumber(loanRequest.getAccountNumber());
@@ -425,10 +429,21 @@ public class LoanService {
         loanRequestRepository.save(loanRequest);
 
         Optional<Customer> customerOpt = customerRepository.findById(loanRequest.getAccountNumber());
-
         emailService.sendEmail(customerOpt.get().getEmail(), "Your loan request " + loanRequestId + " has been approved.", "Loan Approval");
 
         return "Loan successfully approved and credited for account: " + loanRequest.getAccountNumber();
+    }
+
+    private BigDecimal calculateInterestRate(int months) {
+        if (months <= 12) {
+            return BigDecimal.valueOf(5);
+        } else if (months <= 24) {
+            return BigDecimal.valueOf(6);
+        } else if (months <= 36) {
+            return BigDecimal.valueOf(7);
+        } else {
+            return BigDecimal.valueOf(8);
+        }
     }
 
     public String repayLoan(String loanId, BigDecimal repaymentAmount) {
@@ -509,7 +524,7 @@ public class LoanService {
 
         return "Monthly installments processed successfully.";
     }
-    
+
 
     public String getLoanStatus(String loanId) {
         Optional<Loan> loanOpt = loanRepository.findById(loanId);
