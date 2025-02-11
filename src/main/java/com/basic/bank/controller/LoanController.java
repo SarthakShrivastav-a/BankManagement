@@ -19,8 +19,9 @@ public class LoanController {
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<String> applyForLoan(
             @RequestParam String accountNumber,
-            @RequestParam BigDecimal amount) {
-        return ResponseEntity.ok(loanService.applyForLoan(accountNumber, amount));
+            @RequestParam BigDecimal amount,
+            @RequestParam int months) {
+        return ResponseEntity.ok(loanService.applyForLoan(accountNumber, amount,months));
     }
 
     @GetMapping("/status")
