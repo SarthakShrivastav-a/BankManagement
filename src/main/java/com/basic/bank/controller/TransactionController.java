@@ -54,12 +54,7 @@ import java.util.Optional;
 //        return ResponseEntity.ok(transactionService.withdraw(accountNumber, amount));
 //    }
 //
-//    @PostMapping("/transfer")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
-//    public ResponseEntity<String> transfer(@RequestParam BigDecimal amount, @RequestParam String receiverNumber,@RequestParam String message) {
-//        String accountNumber = getAccountNumberFromToken();
-//        return ResponseEntity.ok(transactionService.transfer(accountNumber, amount, receiverNumber,message));
-//    }
+
 //}
 
 
@@ -67,6 +62,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     @Autowired
     TransactionService transactionService;
@@ -83,13 +81,30 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.withdraw(accountNumber, amount));
     }
 
+//    @PostMapping("/transfer")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+//    public ResponseEntity<String> transfer(
+//            @RequestParam String accountNumber,
+//            @RequestParam BigDecimal amount,
+//            @RequestParam String receiverNumber,
+//            @RequestParam String message) {
+//        return ResponseEntity.ok(transactionService.transfer(accountNumber, amount, receiverNumber,message));
+//    }
+private String getAccountNumberFromToken() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String email = authentication.getName();
+    Optional<Customer> customerOpt = Optional.ofNullable(customerRepository.findByEmail(email));
+
+    if (customerOpt.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found");
+    }
+
+    return customerOpt.get().getAccountNumber();
+}
     @PostMapping("/transfer")
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
-    public ResponseEntity<String> transfer(
-            @RequestParam String accountNumber,
-            @RequestParam BigDecimal amount,
-            @RequestParam String receiverNumber,
-            @RequestParam String message) {
+    public ResponseEntity<String> transfer(@RequestParam BigDecimal amount, @RequestParam String receiverNumber,@RequestParam String message) {
+        String accountNumber = getAccountNumberFromToken();
         return ResponseEntity.ok(transactionService.transfer(accountNumber, amount, receiverNumber,message));
     }
 //

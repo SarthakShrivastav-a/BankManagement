@@ -293,7 +293,7 @@ public class TransactionService {
                 transaction.setType("TRANSFER");
                 transaction.setAmount(amount);
                 transaction.setReceiverAccount(receiverNumber);
-                transaction.setMessage(message);
+                transaction.setMessage(message);    
                     transactionRepository.save(transaction);
                     sender.getTransactions().add(transaction);
                     receiver.getTransactions().add(transaction);

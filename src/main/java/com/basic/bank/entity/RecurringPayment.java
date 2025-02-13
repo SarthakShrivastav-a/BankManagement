@@ -25,10 +25,10 @@ public class RecurringPayment {
 
     private String notes;
 
-    public RecurringPayment(String paymentId, String accountId, String serviceName, double amount,
+    public RecurringPayment(String paymentId, String accountNumber, String serviceName, double amount,
                             LocalDate startDate, int frequencyInDays, boolean isPaused, String notes) {
         this.paymentId = paymentId;
-        this.accountNumber = accountId;
+        this.accountNumber = accountNumber;
         this.serviceName = serviceName;
         this.amount = amount;
         this.startDate = startDate;
